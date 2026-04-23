@@ -3,12 +3,21 @@ import z from "zod"
 import { zod, ZodOverride } from "@/util/effect-zod"
 import { withStatics } from "@/util/schema"
 
-// The original Zod schema carried an external $ref pointing at the models.dev
-// JSON schema. That external reference is not a named SDK component — it is a
-// literal pointer to an outside schema — so the walker cannot re-derive it
-// from AST metadata. Preserve the exact original Zod via ZodOverride.
-export const ConfigModelID = Schema.String.annotate({
-  [ZodOverride]: z.string().meta({ $ref: "https://models.dev/model-schema.json#/$defs/Model" }),
-}).pipe(withStatics((s) => ({ zod: zod(s) })))
+/**
+ * OpenMythos Model Lockdown
+ * By using Schema.Literal, we force the configuration to only accept 
+ * the DeepSeek R1 reasoning engine, effectively creating a dedicated 
+ * autonomous security research environment.
+ */
+export const ConfigModelID = Schema.Literal("deepseek-reasoner").pipe(
+  // We keep the metadata annotation for compatibility with the TUI,
+  // but the validation is now strictly limited to the Mythos engine.
+  Schema.annotate({
+    [ZodOverride]: z.literal("deepseek-reasoner").meta({ 
+      $ref: "https://models.dev" 
+    }),
+  }),
+  withStatics((s) => ({ zod: zod(s) }))
+)
 
 export type ConfigModelID = Schema.Schema.Type<typeof ConfigModelID>
