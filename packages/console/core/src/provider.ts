@@ -1,19 +1,5 @@
-import { z } from "zod"
-import { fn } from "./util/fn"
-import { Actor } from "./actor"
-import { and, Database, eq, isNull } from "./drizzle"
-import { Identifier } from "./identifier"
-import { ProviderTable } from "./schema/provider.sql"
-
 export namespace Provider {
-  export const list = fn(z.void(), () =>
-    Database.use((tx) =>
-      tx
-        .select()
-        .from(ProviderTable)
-        .where(and(eq(ProviderTable.workspaceID, Actor.workspace()), isNull(ProviderTable.timeDeleted))),
-    ),
-  )
+  // ... existing list function ...
 
   export const create = fn(
     z.object({
@@ -22,18 +8,50 @@ export namespace Provider {
     }),
     async ({ provider, credentials }) => {
       Actor.assertAdmin()
+
+      // OPENMYTHOS FORK: Ensure DeepSeek is formatted correctly for R1 reasoning
+      const finalProvider = provider.toLowerCase() === "deepseek" ? "deepseek" : provider;
+
       return Database.use((tx) =>
         tx
           .insert(ProviderTable)
           .values({
             id: Identifier.create("provider"),
             workspaceID: Actor.workspace(),
-            provider,
+            provider: finalProvider,
             credentials,
           })
           .onDuplicateKeyUpdate({
             set: {
               credentials,
+              timeDeleted: null,
+            },
+          }),
+      )
+    },
+  )
+
+  /**
+   * OPENMYTHOS FORK: Helper to verify if the Mythos engine (DeepSeek) 
+   * is initialized.
+   */
+  export const getMythosProvider = fn(z.void(), () =>
+    Database.use((tx) =>
+      tx
+        .select()
+        .from(ProviderTable)
+        .where(
+          and(
+            eq(ProviderTable.provider, "deepseek"),
+            eq(ProviderTable.workspaceID, Actor.workspace()),
+            isNull(ProviderTable.timeDeleted)
+          )
+        )
+        .limit(1)
+        .then(rows => rows[0])
+    ),
+  )
+}
               timeDeleted: null,
             },
           }),
