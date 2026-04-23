@@ -1,29 +1,29 @@
 /**
- * Application-wide constants and configuration
+ * Application-wide constants and configuration for OpenMythos
  */
 export const config = {
-  // Base URL
-  baseUrl: "https://opencode.ai",
+  // Base URL - Update this if you host a landing page for your fork
+  baseUrl: "https://openmythos.ai",
 
-  // GitHub
+  // GitHub - Update these to point to your fork repository
   github: {
-    repoUrl: "https://github.com/anomalyco/opencode",
+    repoUrl: "https://github.com", 
     starsFormatted: {
-      compact: "140K",
-      full: "140,000",
+      compact: "0",
+      full: "0",
     },
   },
 
-  // Social links
+  // Social links - You can point these to your own or leave them blank
   social: {
-    twitter: "https://x.com/opencode",
-    discord: "https://discord.gg/opencode",
+    twitter: "https://x.com",
+    discord: "https://discord.gg",
   },
 
-  // Static stats (used on landing page)
+  // Static stats (Update these to reflect your fork's status)
   stats: {
-    contributors: "850",
-    commits: "11,000",
-    monthlyUsers: "6.5M",
+    contributors: "1",
+    commits: "1",
+    monthlyUsers: "ALPHA",
   },
 } as const
